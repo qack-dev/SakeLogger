@@ -1,32 +1,32 @@
 # Node modules (if used with npm scripts)
 node_modules/
 
-# XVBAãŒç”Ÿæˆã™ã‚‹ãƒãƒƒã‚¯ã‚¢ãƒƒãƒ—ã‚„ä¸­é–“ãƒ•ã‚¡ã‚¤ãƒ«
+# XVBA‚ª¶¬‚·‚éƒoƒbƒNƒAƒbƒv‚â’†ŠÔƒtƒ@ƒCƒ‹
 xvba_excel_backup/
 xvba_unit_test/
 xvba_modules/
 
-# ãƒ†ãƒ³ãƒãƒ©ãƒªãƒ•ã‚¡ã‚¤ãƒ«ãƒ»ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãƒ»ãƒ­ã‚°
+# ƒeƒ“ƒ|ƒ‰ƒŠƒtƒ@ƒCƒ‹EƒLƒƒƒbƒVƒ…EƒƒO
 logs/
 *.log
 
-# Excelã®ä¸€æ™‚ãƒ•ã‚¡ã‚¤ãƒ«ï¼ˆç·¨é›†ä¸­ã®è‡ªå‹•ç”Ÿæˆï¼‰
+# Excel‚ÌˆêŽžƒtƒ@ƒCƒ‹i•ÒW’†‚ÌŽ©“®¶¬j
 ~$*.xlsm
 ~$*.xls
 ~$*.xlsx
 
-# Excelæœ¬ä½“ãƒ•ã‚¡ã‚¤ãƒ«ï¼ˆãƒã‚¤ãƒŠãƒªï¼‰ã‚’é™¤å¤–ã™ã‚‹å ´åˆ
+# Excel–{‘Ìƒtƒ@ƒCƒ‹iƒoƒCƒiƒŠj‚ðœŠO‚·‚éê‡
 # SakeLogger.xlsm
 
-# VS Codeã‚„OSã®ä¸€æ™‚ãƒ•ã‚¡ã‚¤ãƒ«
+# VS Code‚âOS‚ÌˆêŽžƒtƒ@ƒCƒ‹
 .DS_Store
 Thumbs.db
 
-# Gitè‡ªèº«ã®ç®¡ç†ãƒ•ã‚¡ã‚¤ãƒ«
+# GitŽ©g‚ÌŠÇ—ƒtƒ@ƒCƒ‹
 !.gitignore
 
-# ãã®ä»–ï¼ˆè¿½åŠ ã—ãŸããªã‘ã‚Œã°ï¼‰
+# ‚»‚Ì‘¼i’Ç‰Á‚µ‚½‚­‚È‚¯‚ê‚Îj
 # config.json
 
-# ç§˜å¯†ã®ãƒ•ã‚¡ã‚¤ãƒ«
+# ”é–§‚Ìƒtƒ@ƒCƒ‹
 secret/
