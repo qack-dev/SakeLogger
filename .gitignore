@@ -1,0 +1,32 @@
+# Node modules (if used with npm scripts)
+node_modules/
+
+# XVBAが生成するバックアップや中間ファイル
+xvba_excel_backup/
+xvba_unit_test/
+xvba_modules/
+
+# テンポラリファイル・キャッシュ・ログ
+logs/
+*.log
+
+# Excelの一時ファイル（編集中の自動生成）
+~$*.xlsm
+~$*.xls
+~$*.xlsx
+
+# Excel本体ファイル（バイナリ）を除外する場合
+# SakeLogger.xlsm
+
+# VS CodeやOSの一時ファイル
+.DS_Store
+Thumbs.db
+
+# Git自身の管理ファイル
+!.gitignore
+
+# その他（追加したくなければ）
+# config.json
+
+# 秘密のファイル
+secret/
