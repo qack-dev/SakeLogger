@@ -23,6 +23,62 @@ Private Const empCol As Integer = 6 '空重量列
 
 Option Explicit
 
+Private Sub btnCalc_Click()
+    Dim i As Long, lastRow As Long
+    Dim sakeName As String
+    Dim abv As Double, fullWeight As Double, emptyWeight As Double
+    Dim nowWeight As Double, drankWeight As Double, pureAlcohol As Double
+
+    Call setObj
+    sakeName = cmbSake.Value
+
+    If sakeName = "" Then
+        MsgBox "お酒を選択してください", vbExclamation
+        Exit Sub
+    End If
+
+    If Not IsNumeric(txtNowWeight.Value) Then
+        MsgBox "現在の重さを正しく入力してください", vbExclamation
+        Exit Sub
+    End If
+
+    nowWeight = CDbl(txtNowWeight.Value)
+
+    lastRow = ws.Cells(ws.Rows.Count, nameCol).End(xlUp).Row
+    For i = 2 To lastRow
+        If ws.Cells(i, nameCol).Value = sakeName Then
+            ' 必要な情報を取得
+            abv = ws.Cells(i, alcoholCol).Value         ' 度数
+            fullWeight = ws.Cells(i, fullCol).Value  ' 未開封重量
+
+            If ws.Cells(i, empCol).Value = "" Then
+                MsgBox "この酒は空ボトル重量が未登録です。" & vbCrLf & _
+                       "飲み終えたら空ボトル重量を入力してください。", vbExclamation
+                Exit Sub
+            End If
+
+            emptyWeight = ws.Cells(i, empCol).Value ' 空ボトル重量
+
+            ' 入力チェック
+            If nowWeight > fullWeight Or nowWeight < emptyWeight Then
+                MsgBox "現在の重さが不正です。", vbExclamation
+                Exit Sub
+            End If
+
+            ' 飲んだ重量計算
+            drankWeight = fullWeight - nowWeight
+
+            ' 純アルコール量計算（アルコールの比重 = 0.8）
+            pureAlcohol = drankWeight * (abv / 100) * 0.8
+
+            ' 結果を表示（小数点1桁）
+            lblResult.Caption = "純アルコール量: " & Format(pureAlcohol, "0.0") & " g"
+            Exit Sub
+        End If
+    Next i
+    Call releaseObj
+End Sub
+
 Private Sub cmbSake_Change()
     Dim targetRow As Long
     Dim lastRow As Long
