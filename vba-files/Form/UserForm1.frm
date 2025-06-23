@@ -4,7 +4,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} UserForm1
    ClientHeight    =   2250
    ClientLeft      =   45
    ClientTop       =   390
-   ClientWidth     =   3585
+   ClientWidth     =   6915
    OleObjectBlob   =   "UserForm1.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
 End
@@ -71,6 +71,10 @@ Private Sub btnCalc_Click()
         End If
     Next i
     Call releaseObj
+End Sub
+
+Private Sub btnSave_Click()
+
 End Sub
 
 Private Sub cmbSake_Change()
