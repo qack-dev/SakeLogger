@@ -98,6 +98,65 @@ Private Sub cmbSake_Change()
     Call releaseObj
 End Sub
 
+Private Sub btnSave_Click()
+    Dim wsMaster As Worksheet, wsLog As Worksheet
+    Dim sakeName As String
+    Dim abv As Double, fullWeight As Double, emptyWeight As Double
+    Dim nowWeight As Double, drankWeight As Double, pureAlcohol As Double
+    Dim lastRow As Long
+    Dim i As Long
+
+    Set wsMaster = Sheets("お酒マスタ")
+    Set wsLog = Sheets("飲酒記録")
+
+    ' --- 入力チェック ---
+    If cmbSake.Value = "" Then
+        MsgBox "酒を選んでください", vbExclamation
+        Exit Sub
+    End If
+
+    If Not IsNumeric(txtNowWeight.Value) Then
+        MsgBox "現在の重さを入力してください", vbExclamation
+        Exit Sub
+    End If
+
+    sakeName = cmbSake.Value
+    nowWeight = CDbl(txtNowWeight.Value)
+
+    ' --- マスタから情報取得 ---
+    For i = 2 To wsMaster.Cells(wsMaster.Rows.Count, "B").End(xlUp).Row
+        If wsMaster.Cells(i, 2).Value = sakeName Then
+            abv = wsMaster.Cells(i, 4).Value
+            fullWeight = wsMaster.Cells(i, 5).Value
+            If wsMaster.Cells(i, 6).Value = "" Then
+                MsgBox "空ボトル重量が未入力です", vbExclamation
+                Exit Sub
+            End If
+            emptyWeight = wsMaster.Cells(i, 6).Value
+            Exit For
+        End If
+    Next i
+
+    ' --- 飲んだ量・純アル計算 ---
+    drankWeight = fullWeight - nowWeight
+    pureAlcohol = drankWeight * (abv / 100) * 0.8
+
+    ' --- ログに記録する ---
+    lastRow = wsLog.Cells(wsLog.Rows.Count, "A").End(xlUp).Row + 1
+
+    wsLog.Cells(lastRow, 1).Value = Now                       ' 日時
+    wsLog.Cells(lastRow, 2).Value = sakeName                 ' 酒名
+    wsLog.Cells(lastRow, 3).Value = nowWeight                ' 現在重量
+    wsLog.Cells(lastRow, 4).Value = Round(pureAlcohol, 1)    ' 純アル量(g)
+    wsLog.Cells(lastRow, 5).Value = Round(drankWeight, 1)    ' 飲んだ量(g)
+
+    MsgBox "記録を保存しました！", vbInformation
+
+    ' --- 入力欄をリセット（任意） ---
+    txtNowWeight.Value = ""
+    lblResult.Caption = ""
+End Sub
+
 Private Sub UserForm_Initialize()
     '変数宣言
     Dim i As Long
