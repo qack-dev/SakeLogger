@@ -1,10 +1,10 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} UserForm1 
-   Caption         =   "お酒を選択"
+   Caption         =   "酒量を登録"
    ClientHeight    =   2400
    ClientLeft      =   45
    ClientTop       =   390
-   ClientWidth     =   2235
+   ClientWidth     =   6060
    OleObjectBlob   =   "UserForm1.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
 End
@@ -17,7 +17,9 @@ Attribute VB_Exposed = False
 Private Const idCol As Integer = 1 'ID列
 Private Const nameCol As Integer = 2 'お酒の名前列
 Private Const kindsCol As Integer = 3 '種類列
-
+Private Const alcoholCol As Integer = 4 '度数列
+Private Const fullCol As Integer = 5 '未開封重量列
+Private Const empCol As Integer = 6 '空重量列
 
 Option Explicit
 
@@ -32,14 +34,14 @@ Private Sub cmbSake_Change()
     For i = 2 To lastRow
         If ws.Cells(i, idCol).Value & "." & ws.Cells(i, nameCol).Value = cmbSake.Value Then
             ' 対象の行が見つかったら情報を取得
-            lblABV.Caption = "度数：" & ws.Cells(i, 4).Value & " %"
-            lblFullW.Caption = "未開封重量：" & ws.Cells(i, 5).Value & " g"
+            lblABV.Caption = "度数：" & ws.Cells(i, alcoholCol).Value & " %"
+            lblFullW.Caption = "未開封重量：" & ws.Cells(i, fullCol).Value & " g"
             
-            If ws.Cells(i, 6).Value = "" Then
+            If ws.Cells(i, empCol).Value = "" Then
                 lblEmptyW.Caption = "空ボトル重量：未登録"
                 lblAlert.Caption = "!!!飲み終わったら空ボトル重量を入力してください!!!"
             Else
-                lblEmptyW.Caption = "空ボトル重量：" & ws.Cells(i, 6).Value & " g"
+                lblEmptyW.Caption = "空ボトル重量：" & ws.Cells(i, empCol).Value & " g"
                 lblAlert.Caption = ""
             End If
             
