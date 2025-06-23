@@ -14,15 +14,6 @@ Public Const empCol As Integer = 6 '空重量列
 
 Option Explicit
 
-Sub ShowUserForm()
-
-    UserForm1.Show
-
-
-
-
-End Sub
-
 'オブジェクト変数代入
 Public Sub setObj()
     Set ws = ThisWorkbook.Worksheets("お酒マスタ")
@@ -33,4 +24,13 @@ End Sub
 Public Sub releaseObj()
     Set ws = Nothing
     Set lastCell = Nothing
+End Sub
+
+Sub ShowUserForm()
+
+    UserForm1.Show
+
+
+
+
 End Sub
