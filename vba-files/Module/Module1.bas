@@ -4,7 +4,6 @@ Public wsMaster As Worksheet
 Public wsLog As Worksheet
 Public lastCell As Range
 
-
 'グローバル定数
 'お酒マスタシート
 Public Const idCol As Integer = 1 'ID列

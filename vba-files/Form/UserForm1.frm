@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} UserForm1 
    Caption         =   "éó Çìoò^"
-   ClientHeight    =   2250
+   ClientHeight    =   2760
    ClientLeft      =   45
    ClientTop       =   390
    ClientWidth     =   7530
@@ -148,7 +148,6 @@ Private Sub btnSave_Click()
     wsLog.Cells(lastRow, logDrunkCol).NumberFormat = "0.0"
 
     ' --- ÉçÉOÇ…ãLò^Ç∑ÇÈ ---
-
     wsLog.Cells(lastRow, logDateCol).Value = txtDate.Value            ' ì˙éû
     wsLog.Cells(lastRow, logNameCol).Value = sakeName                 ' éñº
     wsLog.Cells(lastRow, logNowCol).Value = nowWeight                ' åªç›èdó 
