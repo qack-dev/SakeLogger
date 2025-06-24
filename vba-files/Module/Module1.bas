@@ -26,15 +26,15 @@ Option Explicit
 'オブジェクト変数代入
 Public Sub setObj()
     Set wsMaster = ThisWorkbook.Worksheets("お酒マスタ")
-    Set wsLog = Sheets("飲酒記録")
+    Set wsLog = ThisWorkbook.Worksheets("飲酒記録")
     'wsMaster.RowsMaster.Count でシートの最大行数を取得し、そこから End(xlUp) でデータのある最終セルを探す。
     Set lastCell = wsMaster.Cells(wsMaster.Rows.Count, nameCol).End(xlUp)
 End Sub
 'オブジェクト変数開放
 Public Sub releaseObj()
     Set wsMaster = Nothing
-    Set lastCell = Nothing
     Set wsLog = Nothing
+    Set lastCell = Nothing
 End Sub
 
 Public Sub ShowUserForm()

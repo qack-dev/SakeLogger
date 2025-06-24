@@ -96,8 +96,11 @@ Private Sub btnSave_Click()
     Dim sakeName As String
     Dim abv As Double, fullWeight As Double, emptyWeight As Double
     Dim nowWeight As Double, drankWeight As Double, pureAlcohol As Double
-    Dim lastRow As Long
     Dim i As Long
+    Dim iLog As Long
+    Dim lastLogRow As Long
+    Dim prevWeight As Double
+    Dim found As Boolean
 
     ' --- 入力チェック ---
     If cmbSake.Value = "" Then
@@ -136,25 +139,52 @@ Private Sub btnSave_Click()
         End If
     Next i
 
-    ' --- 飲んだ量・純アル計算 ---
-    drankWeight = fullWeight - nowWeight
+    ' --- 飲んだ量・純アル量の計算方法を分岐 ---
+    If optNewOpen.Value = True Then
+        ' 新品を開けた場合：未開封重量から計算
+        drankWeight = fullWeight - nowWeight
+    ElseIf optContinued.Value = True Then
+        ' 継続飲用：過去の記録から直近の重量を引く
+        found = False
+        lastLogRow = wsLog.Cells(wsLog.Rows.Count, logIdCol).End(xlUp).Row
+
+        ' 下から上に遡って同じ酒の直近の重量を探す
+        For iLog = lastLogRow To 2 Step -1
+            If wsLog.Cells(iLog, logNameCol).Value = sakeName Then
+                prevWeight = wsLog.Cells(iLog, logNowCol).Value
+                found = True
+                Exit For
+            End If
+        Next iLog
+
+        If Not found Then
+            MsgBox "このお酒の記録がまだ存在しません。" & vbCrLf & _
+                   "『新品を開けた』を選んでください。", vbExclamation
+            Exit Sub
+        End If
+
+        drankWeight = prevWeight - nowWeight
+    Else
+        MsgBox "新品か継続かを選んでください。", vbExclamation
+        Exit Sub
+    End If
+
+    ' --- 純アルコール量の計算（共通） ---
     pureAlcohol = drankWeight * (abv / 100) * 0.8
 
-    lastRow = wsLog.Cells(wsLog.Rows.Count, logDateCol).End(xlUp).Row + 1
-
     ' --- 書式設定の変更 ---
-    wsLog.Cells(lastRow, logNowCol).NumberFormat = "0.0"
-    wsLog.Cells(lastRow, logPureAlcCol).NumberFormat = "0.0"
-    wsLog.Cells(lastRow, logDrunkCol).NumberFormat = "0.0"
+    wsLog.Cells(lastLogRow + 1, logNowCol).NumberFormat = "0.0"
+    wsLog.Cells(lastLogRow + 1, logPureAlcCol).NumberFormat = "0.0"
+    wsLog.Cells(lastLogRow + 1, logDrunkCol).NumberFormat = "0.0"
 
     ' --- ログに記録する ---
-    wsLog.Cells(lastRow, logDateCol).Value = txtDate.Value            ' 日時
-    wsLog.Cells(lastRow, logNameCol).Value = sakeName                 ' 酒名
-    wsLog.Cells(lastRow, logNowCol).Value = nowWeight                ' 現在重量
-    wsLog.Cells(lastRow, logPureAlcCol).Value = Round(pureAlcohol, 1)    ' 純アル量(g)
-    wsLog.Cells(lastRow, logDrunkCol).Value = Round(drankWeight, 1)    ' 飲んだ量(g)
-    wsLog.Cells(lastRow, logIdCol).Value = lastRow - 1
-
+    wsLog.Cells(lastLogRow + 1, logDateCol).Value = txtDate.Value          ' 日時
+    wsLog.Cells(lastLogRow + 1, logNameCol).Value = sakeName               ' 酒名
+    wsLog.Cells(lastLogRow + 1, logNowCol).Value = nowWeight              ' 現在重量
+    wsLog.Cells(lastLogRow + 1, logPureAlcCol).Value = Round(pureAlcohol, 1)  ' 純アル量(g)
+    wsLog.Cells(lastLogRow + 1, logDrunkCol).Value = Round(drankWeight, 1)  ' 飲んだ量(g)
+    wsLog.Cells(lastLogRow + 1, logIdCol).Value = lastLogRow
+    
     MsgBox "記録を保存しました！", vbInformation
 
     ' --- 入力欄をリセット（任意） ---
