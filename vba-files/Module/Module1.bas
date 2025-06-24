@@ -21,8 +21,6 @@ Public Const logPureAlcCol As Integer = 4 '純アル量列
 Public Const logDrunkCol As Integer = 5 '飲んだ量列
 Public Const logComCol As Integer = 6 'コメント列
 Public Const logIdCol As Integer = 7 'このシートのIDの列
-Public Const logNameIdCol As Integer = 8 'お酒のID列
-
 
 Option Explicit
 
@@ -40,7 +38,7 @@ Public Sub releaseObj()
     Set wsLog = Nothing
 End Sub
 
-Sub ShowUserForm()
+Public Sub ShowUserForm()
 
     UserForm1.Show
 
@@ -49,3 +47,24 @@ Sub ShowUserForm()
 
 End Sub
 
+'正規表現で'yyyy/mm/dd'形式をチェックし、かつ日付として妥当か判定
+Public Function IsYyyyMmDdFormat_RegEx(ByVal target As String) As Boolean
+    Dim regEx As Object
+    Set regEx = CreateObject("VBScript.RegExp")
+
+    ' パターンを設定
+    ' ^         : 文字列の先頭
+    ' \d{4}     : 4桁の数字 (年)
+    ' /         : 区切り文字のスラッシュ
+    ' \d{2}     : 2桁の数字 (月)
+    ' /         : 区切り文字のスラッシュ
+    ' \d{2}     : 2桁の数字 (日)
+    ' $         : 文字列の末尾
+    regEx.Pattern = "^\d{4}/\d{2}/\d{2}$"
+
+    If regEx.Test(target) And IsDate(target) Then
+        IsYyyyMmDdFormat_RegEx = True
+    Else
+        IsYyyyMmDdFormat_RegEx = False
+    End If
+End Function

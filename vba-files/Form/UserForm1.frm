@@ -4,7 +4,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} UserForm1
    ClientHeight    =   2250
    ClientLeft      =   45
    ClientTop       =   390
-   ClientWidth     =   7140
+   ClientWidth     =   7530
    OleObjectBlob   =   "UserForm1.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
 End
@@ -38,7 +38,6 @@ Private Sub btnCalc_Click()
 
     lastRow = lastCell.Row
     For i = 2 To lastRow
-        'If wsMaster.Cells(i, nameCol).Value = sakeName Then
         If wsMaster.Cells(i, idCol).Value & "." & wsMaster.Cells(i, nameCol).Value = sakeName Then
             ' 必要な情報を取得
             abv = wsMaster.Cells(i, alcoholCol).Value         ' 度数
@@ -99,19 +98,22 @@ Private Sub cmbSake_Change()
 End Sub
 
 Private Sub btnSave_Click()
-    Dim wsMaster As Worksheet, wsLog As Worksheet
     Dim sakeName As String
     Dim abv As Double, fullWeight As Double, emptyWeight As Double
     Dim nowWeight As Double, drankWeight As Double, pureAlcohol As Double
     Dim lastRow As Long
     Dim i As Long
 
-    Set wsMaster = Sheets("お酒マスタ")
-    Set wsLog = Sheets("飲酒記録")
+    Call setObj
 
     ' --- 入力チェック ---
     If cmbSake.Value = "" Then
         MsgBox "酒を選んでください", vbExclamation
+        Exit Sub
+    End If
+
+    If Not IsYyyyMmDdFormat_RegEx(txtDate.Value) Then
+        MsgBox "飲んだ日には'yyyy/mm/dd'形式で入力してください", vbExclamation
         Exit Sub
     End If
 
@@ -124,16 +126,20 @@ Private Sub btnSave_Click()
     nowWeight = CDbl(txtNowWeight.Value)
 
     ' --- マスタから情報取得 ---
-    For i = 2 To wsMaster.Cells(wsMaster.Rows.Count, "B").End(xlUp).Row
-        If wsMaster.Cells(i, 2).Value = sakeName Then
-            abv = wsMaster.Cells(i, 4).Value
-            fullWeight = wsMaster.Cells(i, 5).Value
-            If wsMaster.Cells(i, 6).Value = "" Then
+    For i = 2 To lastCell.Row
+        If wsMaster.Cells(i, idCol).Value & "." & wsMaster.Cells(i, nameCol).Value = sakeName Then
+            abv = wsMaster.Cells(i, alcoholCol).Value
+            fullWeight = wsMaster.Cells(i, fullCol).Value
+            If wsMaster.Cells(i, empCol).Value = "" Then
                 MsgBox "空ボトル重量が未入力です", vbExclamation
-                Exit Sub
+            Else
+                emptyWeight = wsMaster.Cells(i, empCol).Value ' 空ボトル重量
+                ' 入力チェック
+                If nowWeight > fullWeight Or nowWeight < emptyWeight Then
+                    MsgBox "現在の重さが不正です。", vbExclamation
+                    Exit Sub
+                End If
             End If
-            emptyWeight = wsMaster.Cells(i, 6).Value
-            Exit For
         End If
     Next i
 
@@ -141,20 +147,29 @@ Private Sub btnSave_Click()
     drankWeight = fullWeight - nowWeight
     pureAlcohol = drankWeight * (abv / 100) * 0.8
 
-    ' --- ログに記録する ---
-    lastRow = wsLog.Cells(wsLog.Rows.Count, "A").End(xlUp).Row + 1
+    ' --- 書式設定の変更 ---
+    wsLog.Cells(lastRow, logNowCol).NumberFormat = "0.0"
+    wsLog.Cells(lastRow, logPureAlcCol).NumberFormat = "0.0"
+    wsLog.Cells(lastRow, logDrunkCol).NumberFormat = "0.0"
 
-    wsLog.Cells(lastRow, 1).Value = Now                       ' 日時
-    wsLog.Cells(lastRow, 2).Value = sakeName                 ' 酒名
-    wsLog.Cells(lastRow, 3).Value = nowWeight                ' 現在重量
-    wsLog.Cells(lastRow, 4).Value = Round(pureAlcohol, 1)    ' 純アル量(g)
-    wsLog.Cells(lastRow, 5).Value = Round(drankWeight, 1)    ' 飲んだ量(g)
+    ' --- ログに記録する ---
+    lastRow = wsLog.Cells(wsLog.Rows.Count, logDateCol).End(xlUp).Row + 1
+
+    wsLog.Cells(lastRow, logDateCol).Value = txtDate.Value            ' 日時
+    wsLog.Cells(lastRow, logNameCol).Value = sakeName                 ' 酒名
+    wsLog.Cells(lastRow, logNowCol).Value = nowWeight                ' 現在重量
+    wsLog.Cells(lastRow, logPureAlcCol).Value = Round(pureAlcohol, 1)    ' 純アル量(g)
+    wsLog.Cells(lastRow, logDrunkCol).Value = Round(drankWeight, 1)    ' 飲んだ量(g)
+    wsLog.Cells(lastRow, logIdCol).Value = lastRow - 1
+    
 
     MsgBox "記録を保存しました！", vbInformation
 
     ' --- 入力欄をリセット（任意） ---
     txtNowWeight.Value = ""
     lblResult.Caption = ""
+    
+    Call releaseObj
 End Sub
 
 Private Sub UserForm_Initialize()
