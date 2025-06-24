@@ -21,7 +21,6 @@ Private Sub btnCalc_Click()
     Dim abv As Double, fullWeight As Double, emptyWeight As Double
     Dim nowWeight As Double, drankWeight As Double, pureAlcohol As Double
 
-    Call setObj
     sakeName = cmbSake.Value
 
     If sakeName = "" Then
@@ -63,15 +62,13 @@ Private Sub btnCalc_Click()
             Exit Sub
         End If
     Next i
-    Call releaseObj
 End Sub
 
 Private Sub cmbSake_Change()
     Dim targetRow As Long
     Dim lastRow As Long
     Dim i As Long
-    Call setObj
-
+    
     lastRow = lastCell.Row
     
     With wsMaster
@@ -93,8 +90,6 @@ Private Sub cmbSake_Change()
             End If
         Next i
     End With
-
-    Call releaseObj
 End Sub
 
 Private Sub btnSave_Click()
@@ -103,8 +98,6 @@ Private Sub btnSave_Click()
     Dim nowWeight As Double, drankWeight As Double, pureAlcohol As Double
     Dim lastRow As Long
     Dim i As Long
-
-    Call setObj
 
     ' --- 入力チェック ---
     If cmbSake.Value = "" Then
@@ -147,13 +140,14 @@ Private Sub btnSave_Click()
     drankWeight = fullWeight - nowWeight
     pureAlcohol = drankWeight * (abv / 100) * 0.8
 
+    lastRow = wsLog.Cells(wsLog.Rows.Count, logDateCol).End(xlUp).Row + 1
+
     ' --- 書式設定の変更 ---
     wsLog.Cells(lastRow, logNowCol).NumberFormat = "0.0"
     wsLog.Cells(lastRow, logPureAlcCol).NumberFormat = "0.0"
     wsLog.Cells(lastRow, logDrunkCol).NumberFormat = "0.0"
 
     ' --- ログに記録する ---
-    lastRow = wsLog.Cells(wsLog.Rows.Count, logDateCol).End(xlUp).Row + 1
 
     wsLog.Cells(lastRow, logDateCol).Value = txtDate.Value            ' 日時
     wsLog.Cells(lastRow, logNameCol).Value = sakeName                 ' 酒名
@@ -161,21 +155,17 @@ Private Sub btnSave_Click()
     wsLog.Cells(lastRow, logPureAlcCol).Value = Round(pureAlcohol, 1)    ' 純アル量(g)
     wsLog.Cells(lastRow, logDrunkCol).Value = Round(drankWeight, 1)    ' 飲んだ量(g)
     wsLog.Cells(lastRow, logIdCol).Value = lastRow - 1
-    
 
     MsgBox "記録を保存しました！", vbInformation
 
     ' --- 入力欄をリセット（任意） ---
     txtNowWeight.Value = ""
     lblResult.Caption = ""
-    
-    Call releaseObj
 End Sub
 
 Private Sub UserForm_Initialize()
     '変数宣言
     Dim i As Long
-    Call setObj
     'データが2行目以降に存在する場合のみ処理を実行
     If lastCell.Row >= 2 Then
         '2行目から最終行までの範囲を取得
@@ -183,5 +173,4 @@ Private Sub UserForm_Initialize()
             cmbSake.AddItem wsMaster.Cells(i, idCol).Value & "." & wsMaster.Cells(i, nameCol).Value
         Next i
     End If
-    Call releaseObj
 End Sub

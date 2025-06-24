@@ -39,9 +39,10 @@ Public Sub releaseObj()
 End Sub
 
 Public Sub ShowUserForm()
-
+    Call setObj
+    wsMaster.Activate
     UserForm1.Show
-
+    Call releaseObj
 
 
 
