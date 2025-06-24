@@ -38,17 +38,17 @@ Private Sub btnCalc_Click()
 
     lastRow = lastCell.Row
     For i = 2 To lastRow
-        'If ws.Cells(i, nameCol).Value = sakeName Then
-        If ws.Cells(i, idCol).Value & "." & ws.Cells(i, nameCol).Value = sakeName Then
+        'If wsMaster.Cells(i, nameCol).Value = sakeName Then
+        If wsMaster.Cells(i, idCol).Value & "." & wsMaster.Cells(i, nameCol).Value = sakeName Then
             ' 必要な情報を取得
-            abv = ws.Cells(i, alcoholCol).Value         ' 度数
-            fullWeight = ws.Cells(i, fullCol).Value  ' 未開封重量
+            abv = wsMaster.Cells(i, alcoholCol).Value         ' 度数
+            fullWeight = wsMaster.Cells(i, fullCol).Value  ' 未開封重量
 
-            If ws.Cells(i, empCol).Value = "" Then
+            If wsMaster.Cells(i, empCol).Value = "" Then
                 MsgBox "この酒は空ボトル重量が未登録です。" & vbCrLf & _
                        "飲み終えたら空ボトル重量を入力してください。", vbExclamation
             Else
-                emptyWeight = ws.Cells(i, empCol).Value ' 空ボトル重量
+                emptyWeight = wsMaster.Cells(i, empCol).Value ' 空ボトル重量
                 ' 入力チェック
                 If nowWeight > fullWeight Or nowWeight < emptyWeight Then
                     MsgBox "現在の重さが不正です。", vbExclamation
@@ -75,7 +75,7 @@ Private Sub cmbSake_Change()
 
     lastRow = lastCell.Row
     
-    With ws
+    With wsMaster
         For i = 2 To lastRow
             If .Cells(i, idCol).Value & "." & .Cells(i, nameCol).Value = cmbSake.Value Then
                 ' 対象の行が見つかったら情報を取得
@@ -165,7 +165,7 @@ Private Sub UserForm_Initialize()
     If lastCell.Row >= 2 Then
         '2行目から最終行までの範囲を取得
         For i = 2 To lastCell.Row
-            cmbSake.AddItem ws.Cells(i, idCol).Value & "." & ws.Cells(i, nameCol).Value
+            cmbSake.AddItem wsMaster.Cells(i, idCol).Value & "." & wsMaster.Cells(i, nameCol).Value
         Next i
     End If
     Call releaseObj

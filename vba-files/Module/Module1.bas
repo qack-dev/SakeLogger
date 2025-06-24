@@ -1,29 +1,43 @@
 Attribute VB_Name = "Module1"
 'グローバル変数
-Public ws As Worksheet
+Public wsMaster As Worksheet
+Public wsLog As Worksheet
 Public lastCell As Range
 
 
 'グローバル定数
+'お酒マスタシート
 Public Const idCol As Integer = 1 'ID列
 Public Const nameCol As Integer = 2 'お酒の名前列
 Public Const kindsCol As Integer = 3 '種類列
 Public Const alcoholCol As Integer = 4 '度数列
 Public Const fullCol As Integer = 5 '未開封重量列
 Public Const empCol As Integer = 6 '空重量列
+'飲酒記録シート
+Public Const logDateCol As Integer = 1 '日時列
+Public Const logNameCol As Integer = 2 'お酒の名前列
+Public Const logNowCol As Integer = 3 '現在重量列
+Public Const logPureAlcCol As Integer = 4 '純アル量列
+Public Const logDrunkCol As Integer = 5 '飲んだ量列
+Public Const logComCol As Integer = 6 'コメント列
+Public Const logIdCol As Integer = 7 'このシートのIDの列
+Public Const logNameIdCol As Integer = 8 'お酒のID列
+
 
 Option Explicit
 
 'オブジェクト変数代入
 Public Sub setObj()
-    Set ws = ThisWorkbook.Worksheets("お酒マスタ")
-    'ws.Rows.Count でシートの最大行数を取得し、そこから End(xlUp) でデータのある最終セルを探す。
-    Set lastCell = ws.Cells(ws.Rows.Count, nameCol).End(xlUp)
+    Set wsMaster = ThisWorkbook.Worksheets("お酒マスタ")
+    Set wsLog = Sheets("飲酒記録")
+    'wsMaster.RowsMaster.Count でシートの最大行数を取得し、そこから End(xlUp) でデータのある最終セルを探す。
+    Set lastCell = wsMaster.Cells(wsMaster.Rows.Count, nameCol).End(xlUp)
 End Sub
 'オブジェクト変数開放
 Public Sub releaseObj()
-    Set ws = Nothing
+    Set wsMaster = Nothing
     Set lastCell = Nothing
+    Set wsLog = Nothing
 End Sub
 
 Sub ShowUserForm()
@@ -34,3 +48,4 @@ Sub ShowUserForm()
 
 
 End Sub
+
