@@ -16,9 +16,7 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private Sub btnCalc_Click()
-    Dim i As Long, lastRow As Long
     Dim sakeName As String
-    Dim abv As Double, fullWeight As Double, emptyWeight As Double
     Dim nowWeight As Double, drankWeight As Double, pureAlcohol As Double
 
     sakeName = cmbSake.Value
@@ -35,37 +33,13 @@ Private Sub btnCalc_Click()
 
     nowWeight = CDbl(txtNowWeight.Value)
 
-    lastRow = lastCell.Row
-    For i = 2 To lastRow
-        If wsMaster.Cells(i, idCol).Value & "." & wsMaster.Cells(i, nameCol).Value = sakeName Then
-            ' 必要な情報を取得
-            abv = wsMaster.Cells(i, alcoholCol).Value         ' 度数
-            fullWeight = wsMaster.Cells(i, fullCol).Value  ' 未開封重量
-
-            If wsMaster.Cells(i, empCol).Value = "" Then
-                MsgBox "この酒は空ボトル重量が未登録です。" & vbCrLf & _
-                       "飲み終えたら空ボトル重量を入力してください。", vbExclamation
-            Else
-                emptyWeight = wsMaster.Cells(i, empCol).Value ' 空ボトル重量
-                ' 入力チェック
-                If nowWeight > fullWeight Or nowWeight < emptyWeight Then
-                    MsgBox "現在の重さが不正です。", vbExclamation
-                    Exit Sub
-                End If
-            End If
-            ' 飲んだ重量計算
-            drankWeight = fullWeight - nowWeight
-            ' 純アルコール量計算（アルコールの比重 = 0.8）
-            pureAlcohol = drankWeight * (abv / 100) * 0.8
-            ' 結果を表示（小数点1桁）
-            lblResult.Caption = "純アルコール量：" & Format(pureAlcohol, "0.0") & " g"
-            Exit Sub
-        End If
-    Next i
+    If CalcAlcoholInfo(sakeName, nowWeight, drankWeight, pureAlcohol) Then
+        ' 結果を表示（小数点1桁）
+        lblResult.Caption = "純アルコール量：" & Format(pureAlcohol, "0.0") & " g"
+    End If
 End Sub
 
 Private Sub cmbSake_Change()
-    Dim targetRow As Long
     Dim lastRow As Long
     Dim i As Long
     
@@ -94,13 +68,9 @@ End Sub
 
 Private Sub btnSave_Click()
     Dim sakeName As String
-    Dim abv As Double, fullWeight As Double, emptyWeight As Double
-    Dim nowWeight As Double, drankWeight As Double, pureAlcohol As Double
-    Dim i As Long
-    Dim iLog As Long
+    Dim drankWeight As Double, pureAlcohol As Double
+    Dim prevWeight As Double, nowWeight As Double
     Dim lastLogRow As Long
-    Dim prevWeight As Double
-    Dim found As Boolean
 
     ' --- 入力チェック ---
     If cmbSake.Value = "" Then
@@ -121,69 +91,24 @@ Private Sub btnSave_Click()
     sakeName = cmbSake.Value
     nowWeight = CDbl(txtNowWeight.Value)
 
-    ' --- マスタから情報取得 ---
-    For i = 2 To lastCell.Row
-        If wsMaster.Cells(i, idCol).Value & "." & wsMaster.Cells(i, nameCol).Value = sakeName Then
-            abv = wsMaster.Cells(i, alcoholCol).Value
-            fullWeight = wsMaster.Cells(i, fullCol).Value
-            If wsMaster.Cells(i, empCol).Value = "" Then
-                MsgBox "空ボトル重量が未入力です", vbExclamation
-            Else
-                emptyWeight = wsMaster.Cells(i, empCol).Value ' 空ボトル重量
-                ' 入力チェック
-                If nowWeight > fullWeight Or nowWeight < emptyWeight Then
-                    MsgBox "現在の重さが不正です。", vbExclamation
-                    Exit Sub
-                End If
-            End If
-        End If
-    Next i
-
-    ' --- 飲んだ量・純アル量の計算方法を分岐 ---
-    If optNewOpen.Value = True Then
-        ' 新品を開けた場合：未開封重量から計算
-        drankWeight = fullWeight - nowWeight
-    ElseIf optContinued.Value = True Then
-        ' 継続飲用：過去の記録から直近の重量を引く
-        found = False
-        lastLogRow = wsLog.Cells(wsLog.Rows.Count, logIdCol).End(xlUp).Row
-
-        ' 下から上に遡って同じ酒の直近の重量を探す
-        For iLog = lastLogRow To 2 Step -1
-            If wsLog.Cells(iLog, logNameCol).Value = sakeName Then
-                prevWeight = wsLog.Cells(iLog, logNowCol).Value
-                found = True
-                Exit For
-            End If
-        Next iLog
-
-        If Not found Then
-            MsgBox "このお酒の記録がまだ存在しません。" & vbCrLf & _
-                   "『新品を開けた』を選んでください。", vbExclamation
-            Exit Sub
-        End If
-
-        drankWeight = prevWeight - nowWeight
-    Else
-        MsgBox "新品か継続かを選んでください。", vbExclamation
+    If Not CalcAlcoholInfo(sakeName, nowWeight, drankWeight, pureAlcohol) Then
         Exit Sub
     End If
 
-    ' --- 純アルコール量の計算（共通） ---
-    pureAlcohol = drankWeight * (abv / 100) * 0.8
+    lastLogRow = wsLog.Cells(wsLog.Rows.Count, logIdCol).End(xlUp).Row + 1
 
     ' --- 書式設定の変更 ---
-    wsLog.Cells(lastLogRow + 1, logNowCol).NumberFormat = "0.0"
-    wsLog.Cells(lastLogRow + 1, logPureAlcCol).NumberFormat = "0.0"
-    wsLog.Cells(lastLogRow + 1, logDrunkCol).NumberFormat = "0.0"
+    wsLog.Cells(lastLogRow, logNowCol).NumberFormat = "0.0"
+    wsLog.Cells(lastLogRow, logPureAlcCol).NumberFormat = "0.0"
+    wsLog.Cells(lastLogRow, logDrunkCol).NumberFormat = "0.0"
 
     ' --- ログに記録する ---
-    wsLog.Cells(lastLogRow + 1, logDateCol).Value = txtDate.Value          ' 日時
-    wsLog.Cells(lastLogRow + 1, logNameCol).Value = sakeName               ' 酒名
-    wsLog.Cells(lastLogRow + 1, logNowCol).Value = nowWeight              ' 現在重量
-    wsLog.Cells(lastLogRow + 1, logPureAlcCol).Value = Round(pureAlcohol, 1)  ' 純アル量(g)
-    wsLog.Cells(lastLogRow + 1, logDrunkCol).Value = Round(drankWeight, 1)  ' 飲んだ量(g)
-    wsLog.Cells(lastLogRow + 1, logIdCol).Value = lastLogRow
+    wsLog.Cells(lastLogRow, logDateCol).Value = txtDate.Value           ' 日時
+    wsLog.Cells(lastLogRow, logNameCol).Value = sakeName                ' 酒名
+    wsLog.Cells(lastLogRow, logNowCol).Value = nowWeight               ' 現在重量
+    wsLog.Cells(lastLogRow, logPureAlcCol).Value = Round(pureAlcohol, 1)   ' 純アル量(g)
+    wsLog.Cells(lastLogRow, logDrunkCol).Value = Round(drankWeight, 1)   ' 飲んだ量(g)
+    wsLog.Cells(lastLogRow, logIdCol).Value = lastLogRow
     
     MsgBox "記録を保存しました！", vbInformation
 

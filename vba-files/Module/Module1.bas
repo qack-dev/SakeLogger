@@ -69,6 +69,7 @@ Public Function IsYyyyMmDdFormat_RegEx(ByVal target As String) As Boolean
     End If
 End Function
 
+'飲んだ量(drankWeight)と純アルコール量(pureAlcohol)の計算
 Public Function CalcAlcoholInfo(sakeName As String, nowWeight As Double, _
                          ByRef drankWeight As Double, ByRef pureAlcohol As Double) As Boolean
     Dim abv As Double, fullWeight As Double, emptyWeight As Double
@@ -78,17 +79,16 @@ Public Function CalcAlcoholInfo(sakeName As String, nowWeight As Double, _
 
     On Error GoTo ErrHandler
     
-    ' マスタからABV・重量取得
+    ' マスタから度数(ABV)・重量取得
     found = False
     For i = 2 To lastCell.Row
         If wsMaster.Cells(i, idCol).Value & "." & wsMaster.Cells(i, nameCol).Value = sakeName Then
-            abv = wsMaster.Cells(i, alcoholCol).Value
-            fullWeight = wsMaster.Cells(i, fullCol).Value
+            abv = wsMaster.Cells(i, alcoholCol).Value     ' 度数
+            fullWeight = wsMaster.Cells(i, fullCol).Value ' 未開封重量
             If wsMaster.Cells(i, empCol).Value = "" Then
                 MsgBox "この酒は空ボトル重量が未登録です。" & vbCrLf & _
                        "飲み終えたら空ボトル重量を入力してください。", vbExclamation
                 CalcAlcoholInfo = False
-                Exit Function
             Else
                 emptyWeight = wsMaster.Cells(i, empCol).Value ' 空ボトル重量
                 ' 入力チェック
@@ -135,7 +135,7 @@ Public Function CalcAlcoholInfo(sakeName As String, nowWeight As Double, _
         drankWeight = prevWeight - nowWeight
 
     Else
-        MsgBox "『新品を開けた』または『継続飲用』を選んでください。", vbExclamation
+        MsgBox "『新品を開けた』または『途中のお酒を飲んだ』を選んでください。", vbExclamation
         CalcAlcoholInfo = False
         Exit Function
     End If
