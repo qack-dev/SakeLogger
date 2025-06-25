@@ -20,6 +20,9 @@ Public Const logPureAlcCol As Integer = 4 '純アル量列
 Public Const logDrunkCol As Integer = 5 '飲んだ量列
 Public Const logComCol As Integer = 6 'コメント列
 Public Const logIdCol As Integer = 7 'このシートのIDの列
+'集計シート
+Public Const sumDateCol As Integer = 1 '日時列
+Public Const sumPureAlcCol As Integer = 2 '純アル量列
 
 Option Explicit
 
@@ -151,4 +154,48 @@ ErrHandler:
     CalcAlcoholInfo = False
 End Function
 
+'集計シート更新
+Public Sub updateTotallingSheet()
+    '変数宣言
+    Dim wsLog As Worksheet, wsSum As Worksheet
+    Dim dict As Object
+    Dim lastRow As Long, i As Long
+    Dim dt As String, alcohol As Double
+
+    Set wsLog = ThisWorkbook.Worksheets("飲酒記録")
+    Set wsSum = ThisWorkbook.Worksheets("集計")
+    Set dict = CreateObject("Scripting.Dictionary")
+
+    ' 飲酒記録から集計
+    lastRow = wsLog.Cells(wsLog.Rows.Count, logDateCol).End(xlUp).Row
+
+    For i = 2 To lastRow
+        dt = Format(wsLog.Cells(i, logDateCol).Value, "yyyy/mm/dd")
+        alcohol = wsLog.Cells(i, logPureAlcCol).Value
+
+        If dict.exists(dt) Then
+            dict(dt) = dict(dt) + alcohol
+        Else
+            dict.Add dt, alcohol
+        End If
+    Next i
+
+    ' 集計シートに書き出し
+    wsSum.Cells.ClearContents
+    wsSum.Range(Cells(1, sumDateCol), Cells(1, sumPureAlcCol)).Value = Array("日付", "純アルコール量")
+
+    i = 2
+    Dim key As Variant
+    For Each key In dict.Keys
+        wsSum.Cells(i, sumDateCol).Value = key
+        wsSum.Cells(i, sumPureAlcCol).Value = Round(dict(key), 1)
+        i = i + 1
+    Next key
+
+    ' 並び替え（昇順）
+    'wsSum.Range("A2:B" & i - 1).Sort Key1:=wsSum.Range("A2"), Order1:=xlAscending, Header:=xlNo
+    wsSum.Range(Cells(2, sumDateCol), Cells(i - 1, sumPureAlcCol)).Sort Key1:=wsSum.Cells(2, sumDateCol), Order1:=xlAscending, Header:=xlNo
+
+    MsgBox "集計シートを更新しました", vbInformation
+End Sub
 
