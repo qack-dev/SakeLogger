@@ -40,14 +40,13 @@ Public Sub releaseObj()
     Set lastCell = Nothing
 End Sub
 
+'ユーザーフォームを呼び出す
 Public Sub ShowUserForm()
     Call setObj
     wsMaster.Activate
     frmSakeLogger.Show
+    wsLog.Activate
     Call releaseObj
-
-
-
 End Sub
 
 '正規表現で'yyyy/mm/dd'形式をチェックし、かつ日付として妥当か判定
