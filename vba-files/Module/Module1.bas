@@ -226,7 +226,7 @@ Public Sub makeGraph()
     Next chartObj
 
     ' 新しいグラフオブジェクト作成
-    Set chartObj = ws.ChartObjects.Add(Left:=300, Top:=20, Width:=500, Height:=300)
+    Set chartObj = ws.ChartObjects.Add(Left:=209.25, Top:=46.5, Width:=500, Height:=300)
 
     With chartObj.Chart
         .ChartType = xlColumnClustered
@@ -282,16 +282,18 @@ Public Sub addTotalCell()
     ws.Cells(2, totalCol).FormulaR1C1 = "=SUM(R2C" & sumPureAlcCol & ":R" & lastRow & "C" & sumPureAlcCol & ")"
 
     ' 今月1日と月末をヘルパーセルに表示
-    ws.Cells(1, helperStartDateCol).FormulaR1C1 = "=DATE(YEAR(TODAY()), MONTH(TODAY()), 1)"
-    ws.Cells(1, helperEndDateCol).FormulaR1C1 = "=EOMONTH(RC[-1], 0)"
+    ws.Cells(1, helperStartDateCol).Value = "今月1日"
+    ws.Cells(1, helperEndDateCol).Value = "月末"
+    ws.Cells(2, helperStartDateCol).FormulaR1C1 = "=DATE(YEAR(TODAY()), MONTH(TODAY()), 1)"
+    ws.Cells(2, helperEndDateCol).FormulaR1C1 = "=EOMONTH(RC[-1], 0)"
 
     '--- 今月合計の数式を組み立てる ---
     formulaString = "=SUMIFS(" & _
         "R2C" & sumPureAlcCol & ":R" & lastRow & "C" & sumPureAlcCol & "," & _
         "R2C" & sumDateCol & ":R" & lastRow & "C" & sumDateCol & "," & _
-        """>=""" & "&R1C" & helperStartDateCol & "," & _
+        """>=""" & "&R2C" & helperStartDateCol & "," & _
         "R2C" & sumDateCol & ":R" & lastRow & "C" & sumDateCol & "," & _
-        """<=""" & "&R1C" & helperEndDateCol & ")"
+        """<=""" & "&R2C" & helperEndDateCol & ")"
 
     ' 組み立てた数式をセルに設定
     ws.Cells(2, monthlyTotalCol).FormulaR1C1 = formulaString
