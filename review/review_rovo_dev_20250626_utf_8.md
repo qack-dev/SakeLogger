@@ -1,8 +1,7 @@
 # SakeLogger プロジェクト レビュー
 
-**レビュー実施日**: 2025年6月26日  
-**対象プロジェクト**: SakeLogger  
-**プロジェクトパス**: `/mnt/share/prog/VBA/Excel_XVBA/SakeLogger`
+**レビュー実施日**: 2025年6月26日
+**対象プロジェクト**: SakeLogger
 
 ## プロジェクト概要
 
