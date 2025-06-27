@@ -20,6 +20,9 @@ Public Const logPureAlcCol As Integer = 4 '純アル量列
 Public Const logDrunkCol As Integer = 5 '飲んだ量列
 Public Const logComCol As Integer = 6 'コメント列
 Public Const logIdCol As Integer = 7 'このシートのIDの列
+'集計シート
+Public Const sumDateCol As Integer = 1 '日時列
+Public Const sumPureAlcCol As Integer = 2 '純アル量列
 
 Option Explicit
 
@@ -37,14 +40,13 @@ Public Sub releaseObj()
     Set lastCell = Nothing
 End Sub
 
+'ユーザーフォームを呼び出す
 Public Sub ShowUserForm()
     Call setObj
     wsMaster.Activate
     frmSakeLogger.Show
+    wsLog.Activate
     Call releaseObj
-
-
-
 End Sub
 
 '正規表現で'yyyy/mm/dd'形式をチェックし、かつ日付として妥当か判定
@@ -151,4 +153,152 @@ ErrHandler:
     CalcAlcoholInfo = False
 End Function
 
+'集計シート更新
+Public Sub updateTotallingSheet()
+    '変数宣言
+    Dim wsLog As Worksheet, wsSum As Worksheet
+    Dim dict As Object
+    Dim lastRow As Long, i As Long
+    Dim dt As String, alcohol As Double
 
+    Set wsLog = ThisWorkbook.Worksheets("飲酒記録")
+    Set wsSum = ThisWorkbook.Worksheets("集計")
+    Set dict = CreateObject("Scripting.Dictionary")
+
+    ' 飲酒記録から集計
+    lastRow = wsLog.Cells(wsLog.Rows.Count, logDateCol).End(xlUp).Row
+
+    For i = 2 To lastRow
+        dt = Format(wsLog.Cells(i, logDateCol).Value, "yyyy/mm/dd")
+        alcohol = wsLog.Cells(i, logPureAlcCol).Value
+
+        If dict.exists(dt) Then
+            dict(dt) = dict(dt) + alcohol
+        Else
+            dict.Add dt, alcohol
+        End If
+    Next i
+
+    ' 集計シートに書き出し
+    wsSum.Cells.ClearContents
+    wsSum.Range(Cells(1, sumDateCol), Cells(1, sumPureAlcCol)).Value = Array("日付", "純アルコール量")
+
+    i = 2
+    Dim key As Variant
+    For Each key In dict.Keys
+        wsSum.Cells(i, sumDateCol).Value = key
+        wsSum.Cells(i, sumPureAlcCol).Value = Round(dict(key), 1)
+        i = i + 1
+    Next key
+
+    ' 並び替え（昇順）
+    'wsSum.Range("A2:B" & i - 1).Sort Key1:=wsSum.Range("A2"), Order1:=xlAscending, Header:=xlNo
+    wsSum.Range(Cells(2, sumDateCol), Cells(i - 1, sumPureAlcCol)).Sort Key1:=wsSum.Cells(2, sumDateCol), Order1:=xlAscending, Header:=xlNo
+
+    MsgBox "集計シートを更新しました", vbInformation
+    ' オブジェクト開放
+    Set wsLog = Nothing
+    Set wsSum = Nothing
+    Set dict = Nothing
+End Sub
+
+' グラフを自動で作成
+Public Sub makeGraph()
+
+    Dim ws As Worksheet
+    Dim chartObj As ChartObject
+    Dim lastRow As Long
+
+    Set ws = ThisWorkbook.Worksheets("集計")
+    ws.Activate
+
+    ' 最終行取得（列A = 日付）
+    lastRow = ws.Cells(ws.Rows.Count, sumDateCol).End(xlUp).Row
+    If lastRow < 2 Then
+        MsgBox "集計データがありません。", vbExclamation
+        Exit Sub
+    End If
+
+    ' すでにあるグラフを削除（再生成対応）
+    For Each chartObj In ws.ChartObjects
+        chartObj.Delete
+    Next chartObj
+
+    ' 新しいグラフオブジェクト作成
+    Set chartObj = ws.ChartObjects.Add(Left:=209.25, Top:=46.5, Width:=500, Height:=300)
+
+    With chartObj.Chart
+        .ChartType = xlColumnClustered
+
+        ' データ範囲を R1C1 形式で設定
+        .SetSourceData Source:=ws.Range(ws.Cells(2, sumDateCol), ws.Cells(lastRow, sumPureAlcCol))
+
+        ' 軸・タイトルなどの設定
+        .HasTitle = True
+        .ChartTitle.Text = "日別 純アルコール摂取量 (g)"
+        .Axes(xlCategory).HasTitle = True
+        .Axes(xlCategory).AxisTitle.Text = "日付"
+        .Axes(xlValue).HasTitle = True
+        .Axes(xlValue).AxisTitle.Text = "純アルコール量 (g)"
+    End With
+
+    MsgBox "グラフを作成しました！", vbInformation
+    
+    ' オブジェクト開放
+    Set ws = Nothing
+    Set chartObj = Nothing
+End Sub
+
+' 累計表示
+Public Sub addTotalCell()
+
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim formulaString As String
+    
+    '--- 書き出し先の列を定数化 ---
+    Const totalCol As Integer = 6           ' 累計合計 (F列)
+    Const monthlyTotalCol As Integer = 7    ' 今月の合計 (G列)
+    Const helperStartDateCol As Integer = 8 ' ヘルパーセル:月の開始日 (H列)
+    Const helperEndDateCol As Integer = 9   ' ヘルパーセル:月の終了日 (I列)
+    '--------------------------------------------------------------------
+
+    Set ws = ThisWorkbook.Worksheets("集計")
+    ws.Activate
+
+    ' 最終行の取得 (純アルコール量列を基準)
+    lastRow = ws.Cells(ws.Rows.Count, sumPureAlcCol).End(xlUp).Row
+    If lastRow < 2 Then
+        MsgBox "集計が不足しているため、累計を表示できません。", vbExclamation
+        Exit Sub
+    End If
+
+    ' タイトル行
+    ws.Cells(1, totalCol).Value = "累計合計"
+    ws.Cells(1, monthlyTotalCol).Value = "今月の合計"
+
+    ' 累計合計の数式 (R1C1形式で設定)
+    ws.Cells(2, totalCol).FormulaR1C1 = "=SUM(R2C" & sumPureAlcCol & ":R" & lastRow & "C" & sumPureAlcCol & ")"
+
+    ' 今月1日と月末をヘルパーセルに表示
+    ws.Cells(1, helperStartDateCol).Value = "今月1日"
+    ws.Cells(1, helperEndDateCol).Value = "月末"
+    ws.Cells(2, helperStartDateCol).FormulaR1C1 = "=DATE(YEAR(TODAY()), MONTH(TODAY()), 1)"
+    ws.Cells(2, helperEndDateCol).FormulaR1C1 = "=EOMONTH(RC[-1], 0)"
+
+    '--- 今月合計の数式を組み立てる ---
+    formulaString = "=SUMIFS(" & _
+        "R2C" & sumPureAlcCol & ":R" & lastRow & "C" & sumPureAlcCol & "," & _
+        "R2C" & sumDateCol & ":R" & lastRow & "C" & sumDateCol & "," & _
+        """>=""" & "&R2C" & helperStartDateCol & "," & _
+        "R2C" & sumDateCol & ":R" & lastRow & "C" & sumDateCol & "," & _
+        """<=""" & "&R2C" & helperEndDateCol & ")"
+
+    ' 組み立てた数式をセルに設定
+    ws.Cells(2, monthlyTotalCol).FormulaR1C1 = formulaString
+
+    MsgBox "累計セルを追加しました！", vbInformation
+    
+    ' オブジェクト開放
+    Set ws = Nothing
+End Sub
