@@ -13,13 +13,13 @@ Public Const alcoholCol As Integer = 4 '度数列
 Public Const fullCol As Integer = 5 '未開封重量列
 Public Const empCol As Integer = 6 '空重量列
 '飲酒記録シート
-Public Const logDateCol As Integer = 1 '日時列
-Public Const logNameCol As Integer = 2 'お酒の名前列
-Public Const logNowCol As Integer = 3 '現在重量列
-Public Const logPureAlcCol As Integer = 4 '純アル量列
-Public Const logDrunkCol As Integer = 5 '飲んだ量列
-Public Const logComCol As Integer = 6 'コメント列
-Public Const logIdCol As Integer = 7 'このシートのIDの列
+Public Const logDateCol As Integer = 2 '日時列
+Public Const logNameCol As Integer = 3 'お酒の名前列
+Public Const logNowCol As Integer = 4 '現在重量列
+Public Const logPureAlcCol As Integer = 5 '純アル量列
+Public Const logDrunkCol As Integer = 6 '飲んだ量列
+Public Const logComCol As Integer = 7 'コメント列
+Public Const logIdCol As Integer = 1 'このシートのIDの列
 '集計シート
 Public Const sumDateCol As Integer = 1 '日時列
 Public Const sumPureAlcCol As Integer = 2 '純アル量列
@@ -31,7 +31,7 @@ Public Sub setObj()
     Set wsMaster = ThisWorkbook.Worksheets("お酒マスタ")
     Set wsLog = ThisWorkbook.Worksheets("飲酒記録")
     'wsMaster.RowsMaster.Count でシートの最大行数を取得し、そこから End(xlUp) でデータのある最終セルを探す。
-    Set lastCell = wsMaster.Cells(wsMaster.Rows.Count, nameCol).End(xlUp)
+    Set lastCell = wsMaster.Cells(wsMaster.Rows.Count, idCol).End(xlUp)
 End Sub
 'オブジェクト変数開放
 Public Sub releaseObj()
@@ -45,7 +45,9 @@ Public Sub ShowUserForm()
     Call setObj
     wsMaster.Activate
     frmSakeLogger.Show
+    Call shape(Range(Cells(1, idCol), Cells(lastCell.Row, empCol)), True)
     wsLog.Activate
+    Call shape(Range(Cells(1, logIdCol), Cells(Cells(wsLog.Rows.Count, logIdCol).End(xlUp).Row, logComCol)), True)
     Call releaseObj
 End Sub
 
@@ -195,6 +197,8 @@ Public Sub updateTotallingSheet()
     'wsSum.Range("A2:B" & i - 1).Sort Key1:=wsSum.Range("A2"), Order1:=xlAscending, Header:=xlNo
     wsSum.Range(Cells(2, sumDateCol), Cells(i - 1, sumPureAlcCol)).Sort Key1:=wsSum.Cells(2, sumDateCol), Order1:=xlAscending, Header:=xlNo
 
+    Call shape(wsSum.Range(Cells(1, sumDateCol), Cells(i - 1, sumPureAlcCol)), False)
+
     MsgBox "集計シートを更新しました", vbInformation
     ' オブジェクト開放
     Set wsLog = Nothing
@@ -297,8 +301,29 @@ Public Sub addTotalCell()
     ' 組み立てた数式をセルに設定
     ws.Cells(2, monthlyTotalCol).FormulaR1C1 = formulaString
 
+    Call shape(Range(Cells(1, totalCol), Cells(2, helperEndDateCol)), False)
+
     MsgBox "累計セルを追加しました！", vbInformation
     
     ' オブジェクト開放
     Set ws = Nothing
 End Sub
+
+'整形
+Public Sub shape(r As Range, fixed As Boolean)
+    If fixed Then
+        'ウィンドウ枠の固定
+        Cells(2, 1).Select
+        ActiveWindow.FreezePanes = False
+        ActiveWindow.FreezePanes = True
+        'フィルター設定
+        If ActiveSheet.AutoFilterMode = False Then
+            Cells(1, 1).AutoFilter
+        End If
+    End If
+    '幅自動調整
+    r.EntireColumn.AutoFit
+    '罫線を引く
+    r.Borders.LineStyle = xlContinuous
+End Sub
+
