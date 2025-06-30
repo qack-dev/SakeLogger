@@ -174,7 +174,7 @@ Public Sub updateTotallingSheet()
         dt = Format(wsLog.Cells(i, logDateCol).Value, "yyyy/mm/dd")
         alcohol = wsLog.Cells(i, logPureAlcCol).Value
 
-        If dict.exists(dt) Then
+        If dict.Exists(dt) Then
             dict(dt) = dict(dt) + alcohol
         Else
             dict.Add dt, alcohol
