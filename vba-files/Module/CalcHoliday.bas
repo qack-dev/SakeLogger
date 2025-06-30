@@ -81,7 +81,6 @@ Private Function GenerateHolidayList(ByVal y As Long) As Object
     Dim hList As Object
     Set hList = CreateObject("Scripting.Dictionary")
     
-    ' ★コンパイルエラー修正：変数をDate型からVariant型に変更
     Dim d As Variant
     Dim tempDate As Date
     
@@ -143,7 +142,6 @@ Private Function GetPrimaryHolidayName(ByVal d As Date) As String
     Dim m As Long: m = Month(d)
     Dim n As Long: n = Day(d)
     
-    ' ★ご要望に基づき、IF文を改行形式に整形
     Select Case m
         Case 1
             If n = 1 Then
