@@ -4,7 +4,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmSakeLogger
    ClientHeight    =   2490
    ClientLeft      =   45
    ClientTop       =   390
-   ClientWidth     =   7530
+   ClientWidth     =   7515
    OleObjectBlob   =   "frmSakeLogger.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
 End
@@ -98,6 +98,7 @@ Private Sub btnSave_Click()
     lastLogRow = wsLog.Cells(wsLog.Rows.Count, logIdCol).End(xlUp).Row + 1
 
     ' --- 書式設定の変更 ---
+    wsLog.Cells(lastLogRow, logDateCol).NumberFormat = "yyyy/mm/dd"
     wsLog.Cells(lastLogRow, logNowCol).NumberFormat = "0.0"
     wsLog.Cells(lastLogRow, logPureAlcCol).NumberFormat = "0.0"
     wsLog.Cells(lastLogRow, logDrunkCol).NumberFormat = "0.0"

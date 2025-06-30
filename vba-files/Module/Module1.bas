@@ -174,7 +174,7 @@ Public Sub updateTotallingSheet()
         dt = Format(wsLog.Cells(i, logDateCol).Value, "yyyy/mm/dd")
         alcohol = wsLog.Cells(i, logPureAlcCol).Value
 
-        If dict.exists(dt) Then
+        If dict.Exists(dt) Then
             dict(dt) = dict(dt) + alcohol
         Else
             dict.Add dt, alcohol
@@ -188,6 +188,8 @@ Public Sub updateTotallingSheet()
     i = 2
     Dim key As Variant
     For Each key In dict.Keys
+        wsSum.Cells(i, sumDateCol).NumberFormat = "yyyy/mm/dd"
+        wsSum.Cells(i, sumPureAlcCol).NumberFormat = "0.0"
         wsSum.Cells(i, sumDateCol).Value = key
         wsSum.Cells(i, sumPureAlcCol).Value = Round(dict(key), 1)
         i = i + 1
@@ -282,11 +284,14 @@ Public Sub addTotalCell()
     ws.Cells(1, monthlyTotalCol).Value = "今月の合計"
 
     ' 累計合計の数式 (R1C1形式で設定)
+    ws.Cells(2, totalCol).NumberFormat = "0.0"
     ws.Cells(2, totalCol).FormulaR1C1 = "=SUM(R2C" & sumPureAlcCol & ":R" & lastRow & "C" & sumPureAlcCol & ")"
 
     ' 今月1日と月末をヘルパーセルに表示
     ws.Cells(1, helperStartDateCol).Value = "今月1日"
     ws.Cells(1, helperEndDateCol).Value = "月末"
+    ws.Cells(2, helperStartDateCol).NumberFormat = "yyyy/mm/dd"
+    ws.Cells(2, helperEndDateCol).NumberFormat = "yyyy/mm/dd"
     ws.Cells(2, helperStartDateCol).FormulaR1C1 = "=DATE(YEAR(TODAY()), MONTH(TODAY()), 1)"
     ws.Cells(2, helperEndDateCol).FormulaR1C1 = "=EOMONTH(RC[-1], 0)"
 
@@ -299,6 +304,7 @@ Public Sub addTotalCell()
         """<=""" & "&R2C" & helperEndDateCol & ")"
 
     ' 組み立てた数式をセルに設定
+    ws.Cells(2, monthlyTotalCol).NumberFormat = "0.0"
     ws.Cells(2, monthlyTotalCol).FormulaR1C1 = formulaString
 
     Call shape(Range(Cells(1, totalCol), Cells(2, helperEndDateCol)), False)
