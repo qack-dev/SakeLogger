@@ -25,9 +25,10 @@ Public Sub UpdateSummarySheet()
     Dim logDataArray As Variant
     logDataArray = logSheet.Range(logSheet.Cells(2, COL_LOG_DATE), logSheet.Cells(lastRow, COL_LOG_PURE_ALCOHOL)).Value
 
+    ' データを辞書に集計
     For i = 1 To UBound(logDataArray, 1)
         logDate = Format(logDataArray(i, 1), "yyyy/mm/dd")
-        alcoholAmount = logDataArray(i, COL_LOG_PURE_ALCOHOL - 1)
+        alcoholAmount = logDataArray(i, COL_LOG_PURE_ALCOHOL - COL_LOG_DATE + 1)
 
         If summaryData.Exists(logDate) Then
             summaryData(logDate) = summaryData(logDate) + alcoholAmount
@@ -51,8 +52,10 @@ Public Sub UpdateSummarySheet()
     Next key
 
     ' 日付でソート
-    summarySheet.Range(summarySheet.Cells(2, COL_SUMMARY_DATE), summarySheet.Cells(i - 1, COL_SUMMARY_PURE_ALCOHOL)).Sort _
-        Key1:=summarySheet.Cells(2, COL_SUMMARY_DATE), Order1:=xlAscending, Header:=xlNo
+    If i > 2 Then
+        summarySheet.Range(summarySheet.Cells(2, COL_SUMMARY_DATE), summarySheet.Cells(i - 1, COL_SUMMARY_PURE_ALCOHOL)).Sort _
+            Key1:=summarySheet.Cells(2, COL_SUMMARY_DATE), Order1:=xlAscending, Header:=xlNo
+    End If
 
     Call FormatTable(summarySheet.Range(summarySheet.Cells(1, COL_SUMMARY_DATE), summarySheet.Cells(i - 1, COL_SUMMARY_PURE_ALCOHOL)), False)
 
