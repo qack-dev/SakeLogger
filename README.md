@@ -2,7 +2,7 @@
 
 SakeLoggerは、毎日の飲酒量を手軽に記録し、純アルコール摂取量を自動で計算・可視化するためのExcelアプリケーションです。健康管理や休肝日の設定など、あなたの飲酒習慣を見直すきっかけを提供します。
 
-![メイン画像](https://github.com/qack-dev/SakeLogger/issues/13#issuecomment-3031921178)
+![メイン画像](https://github.com/user-attachments/assets/6f1f0908-a375-492c-b6f0-b7e1a44c3bf1)
 
 ## SakeLoggerのダウンロード方法
 
