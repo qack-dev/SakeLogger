@@ -11,7 +11,7 @@ SakeLoggerは、毎日の飲酒量を手軽に記録し、純アルコール摂�
 1.  このGitHubページの上部にあるファイルリストから、`SakeLogger.xlsm` をクリックします。
 2.  次の画面で、右側にある「Download」ボタンをクリックします。
 
-    <ここにGitHubのダウンロードボタンの画像を添付>
+    ![GitHubのダウンロードボタンの画像](https://github.com/user-attachments/assets/b5db95f6-ffd9-4e6a-a133-c595c9c853d2)
 
 **【重要】**
 他のフォルダ（`vba-files`など）や設定ファイル（`.gitignore`など）は、開発用のファイルです。**ツールを利用するだけであれば、これらのファイルをダウンロードする必要はありません。**
