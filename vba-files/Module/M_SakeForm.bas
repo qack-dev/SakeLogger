@@ -9,17 +9,20 @@ Private lastMasterDataCell As Range
 Public Sub ShowSakeLoggerForm()
     If Not InitializeObjects() Then Exit Sub
     
+    ' フォーム表示前にマスタシートをアクティブ化
+    masterSheet.Activate
+    
     Load frmSakeLogger
     frmSakeLogger.Show
     Unload frmSakeLogger
     
-    ' フォームが閉じた後、シートを整形
-    masterSheet.Activate
-    Call M_SheetUtils.FormatTable(masterSheet.Range(masterSheet.Cells(1, COL_MASTER_ID), lastMasterDataCell.Offset(0, COL_MASTER_EMPTY_WEIGHT - 1)), True)
+    ' フォームが閉じた後、ログシートをアクティブ化し、整形
     logSheet.Activate
     Dim lastLogCell As Range
     Set lastLogCell = logSheet.Cells(logSheet.Rows.Count, COL_LOG_ID).End(xlUp)
-    Call M_SheetUtils.FormatTable(logSheet.Range(logSheet.Cells(1, COL_LOG_ID), lastLogCell.Offset(0, COL_LOG_COMMENT - 1)), True)
+    If lastLogCell.Row > 1 Then
+        Call M_SheetUtils.FormatTable(logSheet.Range(logSheet.Cells(1, COL_LOG_ID), lastLogCell.Offset(0, COL_LOG_COMMENT - 1)), True)
+    End If
     
     ReleaseObjects
 End Sub

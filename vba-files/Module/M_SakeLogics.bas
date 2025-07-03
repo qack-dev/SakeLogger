@@ -22,15 +22,15 @@ Public Function CalculateAlcoholInfo(ByVal sakeName As String, ByVal currentWeig
             abv = masterSheet.Cells(i, COL_MASTER_ALCOHOL).Value
             fullWeight = masterSheet.Cells(i, COL_MASTER_FULL_WEIGHT).Value
             
-            If IsEmpty(masterSheet.Cells(i, COL_MASTER_EMPTY_WEIGHT).Value) Then
-                MsgBox "このお酒は空ボトル重量が未登録です。お酒マスタシートで登録してください。", vbExclamation
-                CalculateAlcoholInfo = False
-                Exit Function
+            If IsEmpty(masterSheet.Cells(i, COL_MASTER_EMPTY_WEIGHT).Value) Or masterSheet.Cells(i, COL_MASTER_EMPTY_WEIGHT).Value = "" Then
+                MsgBox "注意: このお酒は空ボトル重量が未登録です。空重量を0gとして計算を続行します。", vbInformation
+                emptyWeight = 0
+            Else
+                emptyWeight = masterSheet.Cells(i, COL_MASTER_EMPTY_WEIGHT).Value
             End If
-            emptyWeight = masterSheet.Cells(i, COL_MASTER_EMPTY_WEIGHT).Value
 
             If currentWeight > fullWeight Or currentWeight < emptyWeight Then
-                MsgBox "現在の重量の値が不正です。", vbExclamation
+                MsgBox "現在の重量の値が不正です（満タン重量を超えているか、空重量を下回っています）。", vbExclamation
                 CalculateAlcoholInfo = False
                 Exit Function
             End If
