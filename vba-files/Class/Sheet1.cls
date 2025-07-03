@@ -10,7 +10,7 @@ Attribute VB_Exposed = True
 Option Explicit
 
 Private Sub CommandButton1_Click()
-    Call updateTotallingSheet
-    Call makeGraph
-    Call addTotalCell
+    Call M_SheetUtils.UpdateSummarySheet
+    Call M_SheetUtils.CreateOrUpdateGraph
+    Call M_SheetUtils.AddTotalFields
 End Sub

@@ -10,5 +10,5 @@ Attribute VB_Exposed = True
 Option Explicit
 
 Private Sub CommandButton1_Click()
-    Call ShowUserForm
+    Call M_SakeForm.ShowSakeLoggerForm
 End Sub

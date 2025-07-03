@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmSakeLogger 
-   Caption         =   "酒量を登録"
+   Caption         =   "飲酒記録フォーム"
    ClientHeight    =   2490
    ClientLeft      =   45
    ClientTop       =   390
@@ -13,121 +13,124 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-
-
 Option Explicit
+
+Private Sub UserForm_Initialize()
+    Dim masterSheet As Worksheet
+    Set masterSheet = M_SakeForm.GetMasterSheet()
+    
+    Dim lastRow As Long
+    lastRow = M_SakeForm.GetLastMasterDataCell().Row
+    
+    If lastRow >= 2 Then
+        Dim i As Long
+        For i = 2 To lastRow
+            cmbSake.AddItem masterSheet.Cells(i, COL_MASTER_ID).Value & "." & masterSheet.Cells(i, COL_MASTER_NAME).Value
+        Next i
+    End If
+    
+    txtDate.Value = Format(Date, "yyyy/mm/dd")
+End Sub
+
+Private Sub cmbSake_Change()
+    Dim masterSheet As Worksheet
+    Set masterSheet = M_SakeForm.GetMasterSheet()
+    
+    Dim lastRow As Long
+    lastRow = M_SakeForm.GetLastMasterDataCell().Row
+    
+    Dim i As Long
+    For i = 2 To lastRow
+        If masterSheet.Cells(i, COL_MASTER_ID).Value & "." & masterSheet.Cells(i, COL_MASTER_NAME).Value = cmbSake.Value Then
+            lblABV.Caption = "度数: " & masterSheet.Cells(i, COL_MASTER_ALCOHOL).Value & " %"
+            lblFullW.Caption = "満タン重量: " & masterSheet.Cells(i, COL_MASTER_FULL_WEIGHT).Value & " g"
+            
+            If IsEmpty(masterSheet.Cells(i, COL_MASTER_EMPTY_WEIGHT).Value) Then
+                lblEmptyW.Caption = "空ボトル重量: 未登録"
+                lblAlert.Caption = "!!! このお酒は空ボトル重量が未登録です !!!"
+            Else
+                lblEmptyW.Caption = "空ボトル重量: " & masterSheet.Cells(i, COL_MASTER_EMPTY_WEIGHT).Value & " g"
+                lblAlert.Caption = ""
+            End If
+            
+            Exit For
+        End If
+    Next i
+End Sub
 
 Private Sub btnCalc_Click()
     Dim sakeName As String
-    Dim nowWeight As Double, drankWeight As Double, pureAlcohol As Double
+    Dim currentWeight As Double, drankWeight As Double, pureAlcohol As Double
 
     sakeName = cmbSake.Value
 
     If sakeName = "" Then
-        MsgBox "お酒を選択してください", vbExclamation
+        MsgBox "お酒を選択してください。", vbExclamation
         Exit Sub
     End If
 
     If Not IsNumeric(txtNowWeight.Value) Then
-        MsgBox "現在の重さを正しく入力してください", vbExclamation
+        MsgBox "現在の重量を半角数字で入力してください。", vbExclamation
         Exit Sub
     End If
 
-    nowWeight = CDbl(txtNowWeight.Value)
+    currentWeight = CDbl(txtNowWeight.Value)
 
-    If CalcAlcoholInfo(sakeName, nowWeight, drankWeight, pureAlcohol) Then
-        ' 結果を表示（小数点1桁）
-        lblResult.Caption = "純アルコール量：" & Format(pureAlcohol, "0.0") & " g"
+    If M_SakeLogics.CalculateAlcoholInfo(sakeName, currentWeight, drankWeight, pureAlcohol) Then
+        lblResult.Caption = "純アルコール量: " & Format(pureAlcohol, "0.0") & " g"
     End If
-End Sub
-
-Private Sub cmbSake_Change()
-    Dim lastRow As Long
-    Dim i As Long
-    
-    lastRow = lastCell.Row
-    
-    With wsMaster
-        For i = 2 To lastRow
-            If .Cells(i, idCol).Value & "." & .Cells(i, nameCol).Value = cmbSake.Value Then
-                ' 対象の行が見つかったら情報を取得
-                lblABV.Caption = "度数：" & .Cells(i, alcoholCol).Value & " %"
-                lblFullW.Caption = "未開封重量：" & .Cells(i, fullCol).Value & " g"
-                
-                If .Cells(i, empCol).Value = "" Then
-                    lblEmptyW.Caption = "空ボトル重量：未登録"
-                    lblAlert.Caption = "!!!飲み終わったら空ボトル重量を入力してください!!!"
-                Else
-                    lblEmptyW.Caption = "空ボトル重量：" & .Cells(i, empCol).Value & " g"
-                    lblAlert.Caption = ""
-                End If
-                
-                Exit For
-            End If
-        Next i
-    End With
 End Sub
 
 Private Sub btnSave_Click()
     Dim sakeName As String
     Dim drankWeight As Double, pureAlcohol As Double
-    Dim prevWeight As Double, nowWeight As Double
+    Dim currentWeight As Double
     Dim lastLogRow As Long
+    Dim logSheet As Worksheet
 
     ' --- 入力チェック ---
     If cmbSake.Value = "" Then
-        MsgBox "酒を選んでください", vbExclamation
+        MsgBox "お酒を選択してください。", vbExclamation
         Exit Sub
     End If
 
-    If Not IsYyyyMmDdFormat_RegEx(txtDate.Value) Then
-        MsgBox "飲んだ日には'yyyy/mm/dd'形式で入力してください", vbExclamation
+    If Not M_SakeLogics.IsValidDateFormat(txtDate.Value) Then
+        MsgBox "日付は'yyyy/mm/dd'形式で入力してください。", vbExclamation
         Exit Sub
     End If
 
     If Not IsNumeric(txtNowWeight.Value) Then
-        MsgBox "現在の重さを入力してください", vbExclamation
+        MsgBox "現在の重量を入力してください。", vbExclamation
         Exit Sub
     End If
 
     sakeName = cmbSake.Value
-    nowWeight = CDbl(txtNowWeight.Value)
+    currentWeight = CDbl(txtNowWeight.Value)
 
-    If Not CalcAlcoholInfo(sakeName, nowWeight, drankWeight, pureAlcohol) Then
+    If Not M_SakeLogics.CalculateAlcoholInfo(sakeName, currentWeight, drankWeight, pureAlcohol) Then
         Exit Sub
     End If
 
-    lastLogRow = wsLog.Cells(wsLog.Rows.Count, logIdCol).End(xlUp).Row + 1
+    Set logSheet = M_SakeForm.GetLogSheet()
+    lastLogRow = logSheet.Cells(logSheet.Rows.Count, COL_LOG_ID).End(xlUp).Row + 1
 
-    ' --- 書式設定の変更 ---
-    wsLog.Cells(lastLogRow, logDateCol).NumberFormat = "yyyy/mm/dd"
-    wsLog.Cells(lastLogRow, logNowCol).NumberFormat = "0.0"
-    wsLog.Cells(lastLogRow, logPureAlcCol).NumberFormat = "0.0"
-    wsLog.Cells(lastLogRow, logDrunkCol).NumberFormat = "0.0"
+    ' --- 書式設定 ---
+    logSheet.Cells(lastLogRow, COL_LOG_DATE).NumberFormat = "yyyy/mm/dd"
+    logSheet.Cells(lastLogRow, COL_LOG_CURRENT_WEIGHT).NumberFormat = "0.0"
+    logSheet.Cells(lastLogRow, COL_LOG_PURE_ALCOHOL).NumberFormat = "0.0"
+    logSheet.Cells(lastLogRow, COL_LOG_DRANK_WEIGHT).NumberFormat = "0.0"
 
-    ' --- ログに記録する ---
-    wsLog.Cells(lastLogRow, logDateCol).Value = txtDate.Value           ' 日時
-    wsLog.Cells(lastLogRow, logNameCol).Value = sakeName                ' 酒名
-    wsLog.Cells(lastLogRow, logNowCol).Value = nowWeight               ' 現在重量
-    wsLog.Cells(lastLogRow, logPureAlcCol).Value = Round(pureAlcohol, 1)   ' 純アル量(g)
-    wsLog.Cells(lastLogRow, logDrunkCol).Value = Round(drankWeight, 1)   ' 飲んだ量(g)
-    wsLog.Cells(lastLogRow, logIdCol).Value = lastLogRow
+    ' --- ログに記録 ---
+    logSheet.Cells(lastLogRow, COL_LOG_DATE).Value = CDate(txtDate.Value)
+    logSheet.Cells(lastLogRow, COL_LOG_NAME).Value = sakeName
+    logSheet.Cells(lastLogRow, COL_LOG_CURRENT_WEIGHT).Value = currentWeight
+    logSheet.Cells(lastLogRow, COL_LOG_PURE_ALCOHOL).Value = Round(pureAlcohol, 1)
+    logSheet.Cells(lastLogRow, COL_LOG_DRANK_WEIGHT).Value = Round(drankWeight, 1)
+    logSheet.Cells(lastLogRow, COL_LOG_ID).Value = lastLogRow - 1
     
-    MsgBox "記録を保存しました！", vbInformation
+    MsgBox "記録を保存しました。", vbInformation
 
-    ' --- 入力欄をリセット（任意） ---
+    ' --- 入力欄をリセット ---
     txtNowWeight.Value = ""
     lblResult.Caption = ""
-End Sub
-
-Private Sub UserForm_Initialize()
-    '変数宣言
-    Dim i As Long
-    'データが2行目以降に存在する場合のみ処理を実行
-    If lastCell.Row >= 2 Then
-        '2行目から最終行までの範囲を取得
-        For i = 2 To lastCell.Row
-            cmbSake.AddItem wsMaster.Cells(i, idCol).Value & "." & wsMaster.Cells(i, nameCol).Value
-        Next i
-    End If
 End Sub
