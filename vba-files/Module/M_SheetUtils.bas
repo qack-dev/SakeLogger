@@ -23,18 +23,35 @@ Public Sub UpdateSummarySheet()
     End If
 
     Dim logDataArray As Variant
+    ' ログシートから日付と純アルコール量のデータを配列に一括読み込み
     logDataArray = logSheet.Range(logSheet.Cells(2, COL_LOG_DATE), logSheet.Cells(lastRow, COL_LOG_PURE_ALCOHOL)).Value
 
-    For i = 1 To UBound(logDataArray, 1)
-        logDate = Format(logDataArray(i, 1), "yyyy/mm/dd")
-        alcoholAmount = logDataArray(i, COL_LOG_PURE_ALCOHOL - 1)
+    ' 配列内の列インデックスを計算
+    Dim dateColumnInArray As Long
+    Dim alcoholColumnInArray As Long
+    dateColumnInArray = 1 ' 読み込み範囲の最初の列
+    alcoholColumnInArray = COL_LOG_PURE_ALCOHOL - COL_LOG_DATE + 1
 
+    ' データを辞書に集計
+    If lastRow = 2 Then ' データが1行の場合、1次元配列として扱われる
+        logDate = Format(logDataArray(dateColumnInArray), "yyyy/mm/dd")
+        alcoholAmount = logDataArray(alcoholColumnInArray)
         If summaryData.Exists(logDate) Then
             summaryData(logDate) = summaryData(logDate) + alcoholAmount
         Else
             summaryData.Add logDate, alcoholAmount
         End If
-    Next i
+    Else ' データが2行以上の場合、2次元配列として扱われる
+        For i = 1 To UBound(logDataArray, 1)
+            logDate = Format(logDataArray(i, dateColumnInArray), "yyyy/mm/dd")
+            alcoholAmount = logDataArray(i, alcoholColumnInArray)
+            If summaryData.Exists(logDate) Then
+                summaryData(logDate) = summaryData(logDate) + alcoholAmount
+            Else
+                summaryData.Add logDate, alcoholAmount
+            End If
+        Next i
+    End If
 
     ' 集計シートに書き出し
     summarySheet.Cells.ClearContents
@@ -51,8 +68,10 @@ Public Sub UpdateSummarySheet()
     Next key
 
     ' 日付でソート
-    summarySheet.Range(summarySheet.Cells(2, COL_SUMMARY_DATE), summarySheet.Cells(i - 1, COL_SUMMARY_PURE_ALCOHOL)).Sort _
-        Key1:=summarySheet.Cells(2, COL_SUMMARY_DATE), Order1:=xlAscending, Header:=xlNo
+    If i > 2 Then ' データが1件以上ある場合のみソート
+        summarySheet.Range(summarySheet.Cells(2, COL_SUMMARY_DATE), summarySheet.Cells(i - 1, COL_SUMMARY_PURE_ALCOHOL)).Sort _
+            Key1:=summarySheet.Cells(2, COL_SUMMARY_DATE), Order1:=xlAscending, Header:=xlNo
+    End If
 
     Call FormatTable(summarySheet.Range(summarySheet.Cells(1, COL_SUMMARY_DATE), summarySheet.Cells(i - 1, COL_SUMMARY_PURE_ALCOHOL)), False)
 
