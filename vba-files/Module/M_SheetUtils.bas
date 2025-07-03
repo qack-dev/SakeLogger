@@ -152,9 +152,9 @@ Public Sub AddTotalFields()
     formulaString = "=SUMIFS(" & _
         "R2C" & COL_SUMMARY_PURE_ALCOHOL & ":R" & lastRow & "C" & COL_SUMMARY_PURE_ALCOHOL & "," & _
         "R2C" & COL_SUMMARY_DATE & ":R" & lastRow & "C" & COL_SUMMARY_DATE & "," & _
-        """>="" & "&R2C" & COL_SUMMARY_HELPER_START_DATE & "," & _
+        """>=""&R2C" & COL_SUMMARY_HELPER_START_DATE & "," & _
         "R2C" & COL_SUMMARY_DATE & ":R" & lastRow & "C" & COL_SUMMARY_DATE & "," & _
-        """<="" & "&R2C" & COL_SUMMARY_HELPER_END_DATE & ")"
+        """<=""&R2C" & COL_SUMMARY_HELPER_END_DATE & ")"
 
     summarySheet.Cells(2, COL_SUMMARY_MONTHLY_TOTAL).NumberFormat = "0.0"
     summarySheet.Cells(2, COL_SUMMARY_MONTHLY_TOTAL).FormulaR1C1 = formulaString
