@@ -2,15 +2,15 @@ Attribute VB_Name = "CalcHoliday"
 Option Explicit
 
 '================================================================================
-' グローバル定数宣言
+' グローバル定数定義
 '================================================================================
-Private Const COL_DATE As Long = 1      ' A列: 日付を格納する列
-Private Const COL_NAME As Long = 2      ' B列: 祝日名を格納する列
-Private Const COL_NOTES As Long = 3     ' C列: 備考を格納する列
+Private Const COL_DATE As Long = 1      ' A列: 日付
+Private Const COL_NAME As Long = 2      ' B列: 祝日名
+Private Const COL_NOTES As Long = 3     ' C列: 備考
 
 
 '================================================================================
-' メインプロシージャ：ユーザーとの対話とシートへの書き込みを担当
+' メインプロシージャ：ユーザーとの対話とシートへの書き込みを担う
 '================================================================================
 Sub AddHolidaysForYear()
     Dim yearVal As Long
@@ -28,7 +28,7 @@ Sub AddHolidaysForYear()
     Set wsHoliday = ThisWorkbook.Sheets("祝日マスタ")
     
     If Application.WorksheetFunction.CountIfs(wsHoliday.Columns(COL_DATE), ">=" & DateSerial(yearVal, 1, 1), wsHoliday.Columns(COL_DATE), "<=" & DateSerial(yearVal, 12, 31)) > 0 Then
-        If MsgBox(yearVal & "年の祝日は既に追加されている可能性があります。重複を避けて続行しますか？", vbQuestion + vbYesNo) = vbNo Then
+        If MsgBox(yearVal & "年の祝日は既に追加されている可能性があります。重複を無視して実行しますか？", vbQuestion + vbYesNo) = vbNo Then
             Exit Sub
         End If
     End If
@@ -64,12 +64,12 @@ Sub AddHolidaysForYear()
     End If
     
     If lastRow > 0 Then
-        Call shape(wsHoliday.Range(Cells(1, COL_DATE), Cells(lastRow, COL_NOTES)), True)
+        Call M_SheetUtils.FormatTable(wsHoliday.Range(wsHoliday.Cells(1, COL_DATE), wsHoliday.Cells(lastRow, COL_NOTES)), True)
     End If
     
     Set holidays = Nothing
     Application.ScreenUpdating = True
-    MsgBox yearVal & "年の祝日を追加しました。法改正による変更は手動で修正してください。"
+    MsgBox yearVal & "年の祝日を追加しました。必要に応じて手動で変更・削除してください。"
 End Sub
 
 
@@ -84,7 +84,7 @@ Private Function GenerateHolidayList(ByVal y As Long) As Object
     Dim d As Variant
     Dim tempDate As Date
     
-    '--- Step 1: 振替休日を除く「本来の祝日」をすべてリストアップ ---
+    '--- Step 1: 法律で定められた「固定日」の祝日をまずリストアップ ---
     For Each d In Array( _
         DateSerial(y, 1, 1), _
         GetHappyMonday(y, 1, 2), _
@@ -104,7 +104,7 @@ Private Function GenerateHolidayList(ByVal y As Long) As Object
         DateSerial(y, 11, 23), _
         IIf(y <= 2018, DateSerial(y, 12, 23), 0) _
     )
-        If d > 0 Then ' 日付が有効な場合のみ
+        If d > 0 Then ' ゼロ以外の有効な日付のみ
             If Not hList.Exists(CDate(d)) Then
                 hList.Add CDate(d), GetPrimaryHolidayName(CDate(d))
             End If
@@ -144,47 +144,27 @@ Private Function GetPrimaryHolidayName(ByVal d As Date) As String
     
     Select Case m
         Case 1
-            If n = 1 Then
-                GetPrimaryHolidayName = "元日"
-            Else
-                GetPrimaryHolidayName = "成人の日"
-            End If
+            If n = 1 Then GetPrimaryHolidayName = "元日" Else GetPrimaryHolidayName = "成人の日"
         Case 2
-            If n = 11 Then
-                GetPrimaryHolidayName = "建国記念の日"
-            Else
-                GetPrimaryHolidayName = "天皇誕生日"
-            End If
+            If n = 11 Then GetPrimaryHolidayName = "建国記念の日" Else GetPrimaryHolidayName = "天皇誕生日"
         Case 3
             GetPrimaryHolidayName = "春分の日"
         Case 4
             GetPrimaryHolidayName = "昭和の日"
         Case 5
-            If n = 3 Then
-                GetPrimaryHolidayName = "憲法記念日"
-            ElseIf n = 4 Then
-                GetPrimaryHolidayName = "みどりの日"
-            ElseIf n = 5 Then
-                GetPrimaryHolidayName = "こどもの日"
-            End If
+            If n = 3 Then GetPrimaryHolidayName = "憲法記念日"
+            If n = 4 Then GetPrimaryHolidayName = "みどりの日"
+            If n = 5 Then GetPrimaryHolidayName = "こどもの日"
         Case 7
             GetPrimaryHolidayName = "海の日"
         Case 8
             GetPrimaryHolidayName = "山の日"
         Case 9
-            If n = GetShubun(y) Then
-                GetPrimaryHolidayName = "秋分の日"
-            Else
-                GetPrimaryHolidayName = "敬老の日"
-            End If
+            If Day(d) = Day(GetShubun(y)) Then GetPrimaryHolidayName = "秋分の日" Else GetPrimaryHolidayName = "敬老の日"
         Case 10
             GetPrimaryHolidayName = "スポーツの日"
         Case 11
-            If n = 3 Then
-                GetPrimaryHolidayName = "文化の日"
-            Else
-                GetPrimaryHolidayName = "勤労感謝の日"
-            End If
+            If n = 3 Then GetPrimaryHolidayName = "文化の日" Else GetPrimaryHolidayName = "勤労感謝の日"
         Case 12
             GetPrimaryHolidayName = "天皇誕生日"
     End Select
@@ -197,13 +177,12 @@ End Function
 
 Private Function GetShunbun(ByVal y As Long) As Date
     Dim d As Integer
-    d = Int(Val("20.8431") + Val("0.242194") * (y - 1980) - Int((y - 1980) / 4))
+    d = Int(20.8431 + 0.242194 * (y - 1980) - Int((y - 1980) / 4))
     GetShunbun = DateSerial(y, 3, d)
 End Function
 
 Private Function GetShubun(ByVal y As Long) As Date
     Dim d As Integer
-    d = Int(Val("23.2488") + Val("0.242194") * (y - 1980) - Int((y - 1980) / 4))
+    d = Int(23.2488 + 0.242194 * (y - 1980) - Int((y - 1980) / 4))
     GetShubun = DateSerial(y, 9, d)
 End Function
-
