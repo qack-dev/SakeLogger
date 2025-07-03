@@ -3,7 +3,7 @@ Option Explicit
 
 ' --- シート名 ---
 Public Const SHEET_MASTER As String = "お酒マスタ"
-Public Const SHEET_LOG As String = "飲酒ログ"
+Public Const SHEET_LOG As String = "飲酒記録"
 Public Const SHEET_SUMMARY As String = "集計"
 Public Const SHEET_HOLIDAY As String = "祝日マスタ"
 
@@ -15,7 +15,7 @@ Public Const COL_MASTER_ALCOHOL As Long = 4
 Public Const COL_MASTER_FULL_WEIGHT As Long = 5
 Public Const COL_MASTER_EMPTY_WEIGHT As Long = 6
 
-' --- 飲酒ログシート列インデックス ---
+' --- 飲酒記録シート列インデックス ---
 Public Const COL_LOG_ID As Long = 1
 Public Const COL_LOG_DATE As Long = 2
 Public Const COL_LOG_NAME As Long = 3
