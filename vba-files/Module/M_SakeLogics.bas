@@ -132,13 +132,6 @@ Public Function CalculateCurrentWeightFromInput( _
         Exit Function
     End If
     
-    ' 4. エラーハンドリング (特殊条件: txtNowNum と optContinued の排他)
-    If Trim(frm.txtNowNum.Value) <> "" And frm.optContinued.Value Then
-        MsgBox "杯数での入力は、継続記録（Continued）と同時に使用できません。", vbExclamation
-        CalculateCurrentWeightFromInput = False
-        Exit Function
-    End If
-    
     ' 3. 計算ロジック
     If Trim(frm.txtNowWeight.Value) <> "" Then
         If Not IsNumeric(frm.txtNowWeight.Value) Then
