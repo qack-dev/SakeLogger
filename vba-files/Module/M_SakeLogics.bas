@@ -75,7 +75,7 @@ ErrorHandler:
 End Function
 
 ' w’è‚³‚ê‚½‚¨ğ‚Ì’¼‘O‚Ìd—Ê‚ğæ“¾‚·‚é
-Private Function GetPreviousWeight(ByVal sakeName As String, ByVal logSheet As Worksheet) As Double
+Public Function GetPreviousWeight(ByVal sakeName As String, ByVal logSheet As Worksheet) As Double
     Dim lastRow As Long
     Dim i As Long
 
