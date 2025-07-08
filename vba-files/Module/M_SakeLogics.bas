@@ -165,8 +165,8 @@ Public Function CalculateCurrentWeightFromInput( _
             CalculateCurrentWeightFromInput = False
             Exit Function
         End If
-        If previousWeight = -1 Then ' previousWeightが取得できなかった場合
-            MsgBox "継続記録のデータが見つかりません。新規開封を選択するか、別の入力方法を使用してください。", vbExclamation
+        If frmSakeLogger.optContinued.Value Then ' previousWeightが取得できた場合
+            MsgBox "「新規開封」を選択してください。", vbExclamation
             CalculateCurrentWeightFromInput = False
             Exit Function
         End If
