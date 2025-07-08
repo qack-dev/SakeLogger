@@ -29,7 +29,7 @@ Public Function CalculateAlcoholInfo(ByVal sakeName As String, ByVal currentWeig
                 emptyWeight = masterSheet.Cells(i, COL_MASTER_EMPTY_WEIGHT).Value
             End If
 
-            If currentWeight > fullWeight Or currentWeight < emptyWeight Then
+            If (currentWeight > fullWeight Or currentWeight < emptyWeight) And frmSakeLogger.txtNowNum.Value = "" Then
                 MsgBox "現在の重量の値が不正です（満タン時重量を超えているか、空き容器重量を下回っています）。", vbExclamation
                 CalculateAlcoholInfo = False
                 Exit Function
@@ -48,7 +48,13 @@ Public Function CalculateAlcoholInfo(ByVal sakeName As String, ByVal currentWeig
 
     ' 飲んだ量を計算
     If frmSakeLogger.optNewOpen.Value Then
-        drankWeight = fullWeight - currentWeight
+        If frmSakeLogger.txtNowNum.Value = "" Then
+            drankWeight = fullWeight - currentWeight
+        ' txtNowNumへの入力なら
+        Else
+            drankWeight = (fullWeight - emptyWeight) * CInt(frmSakeLogger.txtNowNum.Value)
+            currentWeight = 0
+        End If
     ElseIf frmSakeLogger.optContinued.Value Then
         previousWeight = GetPreviousWeight(sakeName, logSheet)
         If previousWeight = -1 Then
@@ -165,13 +171,13 @@ Public Function CalculateCurrentWeightFromInput( _
             Exit Function
         End If
         
-        Dim drankAmount As Double
+        ' Dim drankAmount As Double
         ' 開発者メモ: この「飲んだ量」の計算式は、内容量全体に杯数を掛けるという少し特殊なロジックです。
         ' 例えば、txtNowNumが「1」の場合、内容量全体を飲んだとみなされます。
         ' もし「1杯あたりの量」が定義されている場合は、その量とtxtNowNumを掛ける方が直感的かもしれません。
         ' 現在のロジックは、txtNowNumが「割合」として機能しているように見えます。
-        drankAmount = (fullWeight - emptyWeight) * CDbl(frm.txtNowNum.Value)
-        currentWeight = previousWeight - drankAmount
+        ' drankAmount = (fullWeight - emptyWeight) * CDbl(frm.txtNowNum.Value)
+        ' currentWeight = previousWeight - drankAmount
     End If
     
     CalculateCurrentWeightFromInput = True
