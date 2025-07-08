@@ -1,10 +1,10 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmSakeLogger 
    Caption         =   "飲酒記録フォーム"
-   ClientHeight    =   2490
+   ClientHeight    =   3810
    ClientLeft      =   45
    ClientTop       =   390
-   ClientWidth     =   7515
+   ClientWidth     =   8760
    OleObjectBlob   =   "frmSakeLogger.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
 End
